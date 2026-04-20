@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LandChain Registry — Secure Property Records</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+          --amazon-orange: #FF9900;
+          --amazon-orange-dark: #E47911;
+          --amazon-orange-light: #FFF3E0;
+          --navy: #131921;
+          --navy-mid: #232F3E;
+          --navy-light: #37475A;
+          --white: #FFFFFF;
+          --bg: #F3F3F3;
+          --border: #D5D9D9;
+          --text: #0F1111;
+          --text-muted: #565959;
+          --success: #067D62;
+          --success-bg: #E6F4F0;
+          --danger: #CC0C39;
+          --danger-bg: #FFF0F1;
+          --blue: #0F6CBF;
+          --blue-bg: #EAF2FB;
+          --card-shadow: 0 2px 8px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04);
+        }
+
+        body {
+          font-family: 'Nunito Sans', sans-serif;
+          background: var(--bg);
+          color: var(--text);
+          min-height: 100vh;
+        }
+
+        /* ── TOP NAV ── */
+        .topnav {
+          background: var(--navy);
+          display: flex;
+          align-items: center;
+          gap: 0;
+          height: 60px;
+          padding: 0 16px;
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          border-bottom: 3px solid var(--amazon-orange);
+        }
+
+        .nav-logo {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px 8px 0;
+          border-right: 1px solid #3a4553;
+          margin-right: 14px;
+          text-decoration: none;
+        }
+
+        .nav-logo-icon {
+          width: 34px;
+          height: 34px;
+          background: var(--amazon-orange);
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .nav-logo-icon svg { width: 20px; height: 20px; fill: var(--navy); }
+
+        .nav-logo-text { color: var(--white); font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
+        .nav-logo-text span { color: var(--amazon-orange); }
+
+        .nav-links { display: flex; align-items: center; gap: 2px; flex: 1; }
+
+        .nav-link {
+          color: #cdd5dd;
+          font-size: 13px;
+          font-weight: 600;
+          padding: 8px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          border: 1px solid transparent;
+          transition: all 0.15s;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          white-space: nowrap;
+        }
+
+        .nav-link:hover, .nav-link.active {
+          color: var(--white);
+          border-color: var(--white);
+        }
+
+        .nav-link.disabled {
+          opacity: 0.45;
+          cursor: not-allowed;
+          border-color: transparent;
+        }
+
+        .nav-link svg { width: 14px; height: 14px; opacity: 0.8; }
+
+        .nav-badge {
+          background: var(--amazon-orange);
+          color: var(--navy);
+          font-size: 10px;
+          font-weight: 800;
+          padding: 1px 6px;
+          border-radius: 10px;
+          margin-left: 2px;
+        }
+
+        .nav-right {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          margin-left: auto;
+        }
+
+        .chain-status-pill {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(255,255,255,0.07);
+          border: 1px solid #3a4553;
+          padding: 5px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          color: #cdd5dd;
+          font-weight: 600;
+        }
+
+        .auth-status-pill {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(255,255,255,0.07);
+          border: 1px solid #3a4553;
+          padding: 5px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          color: #cdd5dd;
+          font-weight: 700;
+        }
+
+        .auth-status-pill.authenticated {
+          border-color: rgba(46, 204, 113, 0.45);
+          color: #e8fff1;
+        }
+
+        .auth-status-pill.warning {
+          border-color: rgba(240, 192, 64, 0.55);
+          color: #fff5d6;
+        }
+
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #aaa;
+        }
+
+        .status-dot.valid { background: #2ecc71; box-shadow: 0 0 0 3px rgba(46,204,113,0.25); }
+        .status-dot.warning { background: #f0c040; box-shadow: 0 0 0 3px rgba(240,192,64,0.25); }
+        .status-dot.invalid { background: var(--danger); box-shadow: 0 0 0 3px rgba(204,12,57,0.25); }
+
+        /* ── SUB NAV / BREADCRUMB ── */
+        .subnav {
+          background: var(--navy-mid);
+          padding: 0 24px;
+          height: 38px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          color: #cdd5dd;
+        }
+
+        .subnav a { color: #cdd5dd; text-decoration: none; }
+        .subnav a:hover { color: var(--amazon-orange); text-decoration: underline; }
+        .subnav span { color: var(--white); font-weight: 600; }
+
+        /* ── MAIN CONTENT ── */
+        .main { max-width: 1260px; margin: 0 auto; padding: 24px 20px; }
+
+        /* ── PAGE HEADER ── */
+        .page-header {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          margin-bottom: 20px;
+          gap: 16px;
+        }
+
+        .page-title { font-size: 24px; font-weight: 800; color: var(--text); line-height: 1.2; }
+        .page-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+        /* ── STAT CARDS ── */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+
+        .stat-card {
+          background: var(--white);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 18px 20px;
+          box-shadow: var(--card-shadow);
+          display: flex;
+          gap: 14px;
+          align-items: flex-start;
+          transition: box-shadow 0.15s;
+        }
+
+        .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.13); }
+
+        .stat-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .stat-icon svg { width: 22px; height: 22px; }
+        .stat-icon.orange { background: var(--amazon-orange-light); }
+        .stat-icon.orange svg { fill: var(--amazon-orange-dark); }
+        .stat-icon.green { background: var(--success-bg); }
+        .stat-icon.green svg { fill: var(--success); }
+        .stat-icon.blue { background: var(--blue-bg); }
+        .stat-icon.blue svg { fill: var(--blue); }
+        .stat-icon.navy { background: #EEF0F5; }
+        .stat-icon.navy svg { fill: var(--navy-mid); }
+
+        .stat-info { flex: 1; }
+        .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1.1; margin-top: 4px; }
+        .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+        /* ── SECTION HEADER ── */
+        .section-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 14px;
+        }
+
+        .section-title { font-size: 17px; font-weight: 800; color: var(--text); }
+        .section-count { font-size: 13px; color: var(--text-muted); font-weight: 400; margin-left: 8px; }
+
+        /* ── CARD ── */
+        .card {
+          background: var(--white);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          box-shadow: var(--card-shadow);
+          overflow: hidden;
+        }
+
+        .card-header {
+          padding: 16px 20px;
+          border-bottom: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #FAFAFA;
+        }
+
+        .card-header-title { font-size: 15px; font-weight: 700; color: var(--text); }
+        .card-body { padding: 20px; }
+
+        /* ── TABLE ── */
+        .table-wrap { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+        thead tr { background: #F7F8F8; }
+
+        th {
+          padding: 10px 14px;
+          text-align: left;
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+          color: var(--text-muted);
+          border-bottom: 2px solid var(--border);
+          white-space: nowrap;
+        }
+
+        td {
+          padding: 12px 14px;
+          border-bottom: 1px solid #EAEDED;
+          color: var(--text);
+          vertical-align: middle;
+        }
+
+        tbody tr { transition: background 0.1s; }
+        tbody tr:hover { background: #F7F8F8; }
+        tbody tr:last-child td { border-bottom: none; }
+
+        .td-id {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 11px;
+          color: var(--text-muted);
+          background: #F3F3F3;
+          padding: 3px 7px;
+          border-radius: 4px;
+        }
+
+        .td-owner { font-weight: 700; color: var(--blue); }
+        .td-owner:hover { text-decoration: underline; cursor: pointer; }
+
+        .badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 3px 9px;
+          border-radius: 12px;
+        }
+
+        .badge-verified { background: var(--success-bg); color: var(--success); }
+        .badge-pending { background: #FFF8E1; color: #9B6F00; }
+        .badge-area { background: var(--blue-bg); color: var(--blue); }
+
+        /* ── BUTTONS ── */
+        .btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-family: 'Nunito Sans', sans-serif;
+          font-size: 13px;
+          font-weight: 700;
+          padding: 8px 16px;
+          border-radius: 6px;
+          cursor: pointer;
+          border: 1px solid transparent;
+          transition: all 0.15s;
+          text-decoration: none;
+        }
+
+        .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+        .btn-primary {
+          background: linear-gradient(to bottom, #FFD813, #FFB703);
+          color: #0F1111;
+          border-color: #C98C00;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+
+        .btn-primary:hover { background: linear-gradient(to bottom, #F7CA00, #EEA700); filter: brightness(1.04); }
+        .btn-primary:active { background: #e99d00; }
+
+        .btn-secondary {
+          background: linear-gradient(to bottom, #ffffff, #f0f1f2);
+          color: var(--text);
+          border-color: #adb1b8;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        }
+
+        .btn-secondary:hover { background: linear-gradient(to bottom, #f7f8f8, #e7e9ec); }
+
+        .btn-outline {
+          background: transparent;
+          color: var(--blue);
+          border-color: var(--blue);
+        }
+
+        .btn-outline:hover { background: var(--blue-bg); }
+
+        .btn-sm { padding: 5px 11px; font-size: 12px; }
+        .btn-lg { padding: 11px 22px; font-size: 15px; border-radius: 8px; }
+
+        /* ── FORM ── */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.full { grid-column: 1 / -1; }
+
+        label { font-size: 13px; font-weight: 700; color: var(--text); }
+        label .req { color: var(--danger); margin-left: 2px; }
+
+        .form-input {
+          font-family: 'Nunito Sans', sans-serif;
+          font-size: 13px;
+          color: var(--text);
+          background: var(--white);
+          border: 1px solid #888C8C;
+          border-radius: 6px;
+          padding: 9px 12px;
+          outline: none;
+          transition: border-color 0.15s, box-shadow 0.15s;
+          width: 100%;
+        }
+
+        .form-input:focus {
+          border-color: #007185;
+          box-shadow: 0 0 0 3px rgba(0,113,133,0.15);
+        }
+
+        .form-hint { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        .form-actions {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-top: 24px;
+          padding-top: 20px;
+          border-top: 1px solid var(--border);
+        }
+
+        /* ── MINING STATUS ── */
+        .mining-bar {
+          display: none;
+          background: #FFFBE6;
+          border: 1px solid #F0C040;
+          border-radius: 8px;
+          padding: 14px 18px;
+          margin-top: 16px;
+          align-items: center;
+          gap: 14px;
+        }
+
+        .mining-bar.visible { display: flex; }
+
+        .mining-spinner {
+          width: 22px;
+          height: 22px;
+          border: 3px solid #F0C040;
+          border-top-color: transparent;
+          border-radius: 50%;
+          animation: spin 0.7s linear infinite;
+          flex-shrink: 0;
+        }
+
+        .mining-text { font-size: 13px; font-weight: 700; color: #7A5500; }
+        .mining-sub { font-size: 11px; color: #9B6F00; margin-top: 2px; }
+
+        .success-bar {
+          display: none;
+          background: var(--success-bg);
+          border: 1px solid #B2DFDA;
+          border-radius: 8px;
+          padding: 14px 18px;
+          margin-top: 16px;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .success-bar.visible { display: flex; }
+        .success-icon { font-size: 20px; }
+        .success-text { font-size: 13px; font-weight: 700; color: var(--success); }
+        .success-sub { font-size: 11px; color: #4CAF50; margin-top: 2px; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── BLOCKCHAIN BLOCKS ── */
+        .blockchain-list { display: flex; flex-direction: column; gap: 12px; }
+
+        .block-card {
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          overflow: hidden;
+          background: var(--white);
+          box-shadow: var(--card-shadow);
+          animation: slideIn 0.35s ease forwards;
+          opacity: 0;
+        }
+
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .block-card:nth-child(1) { animation-delay: 0.05s; }
+        .block-card:nth-child(2) { animation-delay: 0.1s; }
+        .block-card:nth-child(3) { animation-delay: 0.15s; }
+        .block-card:nth-child(4) { animation-delay: 0.2s; }
+        .block-card:nth-child(5) { animation-delay: 0.25s; }
+
+        .block-header {
+          padding: 12px 18px;
+          background: var(--navy-mid);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .block-number { color: var(--white); font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .block-number-badge {
+          background: var(--amazon-orange);
+          color: var(--navy);
+          font-size: 11px;
+          font-weight: 800;
+          padding: 2px 8px;
+          border-radius: 4px;
+        }
+
+        .block-timestamp { color: #9DAAB6; font-size: 11px; }
+
+        .block-body { padding: 16px 18px; }
+
+        .block-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        .block-field label {
+          font-size: 10px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.7px;
+          color: var(--text-muted);
+          display: block;
+          margin-bottom: 4px;
+        }
+
+        .hash-value {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 11px;
+          color: #067D62;
+          background: var(--success-bg);
+          padding: 6px 10px;
+          border-radius: 5px;
+          word-break: break-all;
+          line-height: 1.5;
+        }
+
+        .nonce-value {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--blue);
+          background: var(--blue-bg);
+          padding: 6px 10px;
+          border-radius: 5px;
+        }
+
+        .block-tx {
+          margin-top: 12px;
+          padding-top: 12px;
+          border-top: 1px solid #EAEDED;
+        }
+
+        .block-tx label {
+          font-size: 10px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.7px;
+          color: var(--text-muted);
+          display: block;
+          margin-bottom: 6px;
+        }
+
+        .block-tx pre {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 11px;
+          color: var(--text-muted);
+          background: #F7F8F8;
+          padding: 10px 12px;
+          border-radius: 5px;
+          border: 1px solid var(--border);
+          white-space: pre-wrap;
+          word-break: break-all;
+          overflow: auto;
+          max-height: 120px;
+        }
+
+        /* ── GENESIS BADGE ── */
+        .genesis-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          background: #FFF3E0;
+          color: var(--amazon-orange-dark);
+          font-size: 11px;
+          font-weight: 700;
+          padding: 2px 8px;
+          border-radius: 4px;
+          border: 1px solid #FFCC80;
+        }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+          text-align: center;
+          padding: 50px 20px;
+          color: var(--text-muted);
+        }
+
+        .empty-state svg { width: 48px; height: 48px; fill: #D5D9D9; margin-bottom: 12px; }
+        .empty-state h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .empty-state p { font-size: 13px; }
+
+        /* ── VIEWS ── */
+        .view { display: none; }
+        .view.active { display: block; }
+
+        /* ── ALERT BANNER ── */
+        .alert-banner {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 18px;
+          border-radius: 8px;
+          margin-bottom: 18px;
+          font-size: 13px;
+          font-weight: 600;
+        }
+
+        .alert-banner svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .alert-info { background: var(--blue-bg); color: var(--blue); border: 1px solid #B3D4F5; }
+        .alert-success { background: var(--success-bg); color: var(--success); border: 1px solid #B2DFDA; }
+
+        /* ── DIVIDER ── */
+        .chain-connector {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 24px;
+          color: var(--text-muted);
+          font-size: 18px;
+        }
+
+        /* ── TOOLBAR ── */
+        .toolbar {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 16px;
+        }
+
+        .auth-card {
+          margin-bottom: 18px;
+        }
+
+        .auth-grid {
+          display: grid;
+          grid-template-columns: 2fr 1fr;
+          gap: 18px;
+          align-items: start;
+        }
+
+        .auth-form {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+          gap: 12px;
+          align-items: end;
+        }
+
+        .auth-message {
+          margin-top: 12px;
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--text-muted);
+        }
+
+        .auth-message.error { color: var(--danger); }
+        .auth-message.success { color: var(--success); }
+        .auth-message.warning { color: #9B6F00; }
+
+        .auth-note {
+          margin-top: 10px;
+          font-size: 12px;
+          color: var(--text-muted);
+          line-height: 1.6;
+        }
+
+        .auth-session {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          justify-content: center;
+          height: 100%;
+        }
+
+        .auth-session-line {
+          font-size: 13px;
+          color: var(--text-muted);
+        }
+
+        .auth-session-line strong {
+          color: var(--text);
+        }
+
+        .auth-session-line strong.warning {
+          color: #9B6F00;
+        }
+
+        .auth-session-line strong.expired {
+          color: var(--danger);
+        }
+
+        .role-pills {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .role-pill {
+          display: inline-flex;
+          align-items: center;
+          padding: 4px 10px;
+          border-radius: 999px;
+          background: var(--blue-bg);
+          color: var(--blue);
+          font-size: 11px;
+          font-weight: 800;
+        }
+
+        .search-input {
+          font-family: 'Nunito Sans', sans-serif;
+          font-size: 13px;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          padding: 8px 12px;
+          outline: none;
+          background: var(--white);
+          width: 240px;
+          transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .search-input:focus { border-color: #007185; box-shadow: 0 0 0 3px rgba(0,113,133,0.12); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 900px) {
+          .stats-row { grid-template-columns: 1fr 1fr; }
+          .form-grid { grid-template-columns: 1fr; }
+          .block-grid { grid-template-columns: 1fr; }
+          .auth-grid { grid-template-columns: 1fr; }
+          .auth-form { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 600px) {
+          .stats-row { grid-template-columns: 1fr; }
+          .nav-links .nav-link span { display: none; }
+          .nav-links .nav-link { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+    <a class="nav-logo" href="#">
+        <div class="nav-logo-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 10L12 3l9 7v11H3V10z"/><rect x="9" y="14" width="6" height="7"/></svg>
+        </div>
+        <div class="nav-logo-text">Land<span>Chain</span></div>
+    </a>
+    <div class="nav-links">
+        <div class="nav-link active" onclick="showView('dashboard')">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+            <span>Dashboard</span>
+        </div>
+        <div class="nav-link" onclick="showView('lands')">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
+            <span>Land Records</span>
+        </div>
+        <div class="nav-link" onclick="showView('register')">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            <span>Register Land</span>
+            <span class="nav-badge">NEW</span>
+        </div>
+        <div class="nav-link" onclick="showView('blockchain')">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 6h10l3 4-8 9-8-9 3-4zm0 0"/></svg>
+            <span>Blockchain Explorer</span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="auth-status-pill">
+            <div class="status-dot" id="authStatusDot"></div>
+            <span id="authNavLabel">Public Access</span>
+        </div>
+        <div class="chain-status-pill">
+            <div class="status-dot" id="navStatusDot"></div>
+            <span id="navStatusText">Checking…</span>
+        </div>
+    </div>
+</nav>
+
+<!-- SUBNAV -->
+<div class="subnav" id="breadcrumb">
+    <a href="#">Home</a> ›
+    <span id="breadcrumbCurrent">Dashboard</span>
+</div>
+
+<div class="main">
+
+    <div class="card auth-card">
+        <div class="card-header">
+            <div class="card-header-title">Authentication</div>
+        </div>
+        <div class="card-body">
+            <div class="auth-grid">
+                <div>
+                    <form id="authLoginForm" class="auth-form" onsubmit="login(event)">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input class="form-input" id="loginUsername" type="text" placeholder="e.g. registrar">
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input class="form-input" id="loginPassword" type="password" placeholder="Password">
+                        </div>
+                        <div class="form-group">
+                            <label>Role Access</label>
+                            <input class="form-input" type="text" value="Citizen / Registrar / Private Access" disabled>
+                        </div>
+                        <button class="btn btn-primary" type="submit">Sign In</button>
+                    </form>
+                    <div id="authMessage" class="auth-message">Sign in to use secured actions in production.</div>
+                </div>
+                <div id="authSession" class="auth-session" style="display:none;">
+                    <div class="auth-session-line"><strong id="authFullName">Not signed in</strong></div>
+                    <div class="auth-session-line">Username: <strong id="authUsernameValue">-</strong></div>
+                    <div class="auth-session-line">Session status: <strong id="authSessionState">Inactive</strong></div>
+                    <div class="auth-session-line">Time remaining: <strong id="authTimeRemaining">-</strong></div>
+                    <div class="auth-session-line">Token expires: <strong id="authExpiresAt">-</strong></div>
+                    <div id="authRoles" class="role-pills"></div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <button class="btn btn-secondary btn-sm" type="button" onclick="refreshProtectedData()">Refresh Secure Data</button>
+                        <button class="btn btn-outline btn-sm" type="button" onclick="logout()">Sign Out</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─────────── DASHBOARD ─────────── -->
+    <div id="dashboard" class="view active">
+
+        <div class="page-header">
+            <div>
+                <div class="page-title">Registry Dashboard</div>
+                <div class="page-subtitle">Overview of land records secured on the blockchain</div>
+            </div>
+            <button class="btn btn-primary btn-lg" onclick="showView('register')">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                Register New Land
+            </button>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <svg viewBox="0 0 24 24"><path d="M3 10L12 3l9 7v11H3V10z"/><rect x="9" y="14" width="6" height="7"/></svg>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Total Parcels</div>
+                    <div class="stat-value" id="totalLands">—</div>
+                    <div class="stat-sub">Registered land records</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon navy">
+                    <svg viewBox="0 0 24 24"><path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5C13 2.12 11.88 1 10.5 1S8 2.12 8 3.5V5H4c-1.1 0-2 .9-2 2v3.8H3.5c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7H2V20c0 1.1.9 2 2 2h3.8v-1.5c0-1.49 1.21-2.7 2.7-2.7s2.7 1.21 2.7 2.7V22H17c1.1 0 2-.9 2-2v-4h1.5c1.38 0 2.5-1.12 2.5-2.5S21.88 11 20.5 11z"/></svg>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Total Blocks</div>
+                    <div class="stat-value" id="blockCount">—</div>
+                    <div class="stat-sub">Blocks in chain</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Chain Status</div>
+                    <div class="stat-value" id="chainValid" style="font-size:18px;margin-top:6px;">—</div>
+                    <div class="stat-sub">Integrity verified</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Consensus</div>
+                    <div class="stat-value" style="font-size:14px;margin-top:8px;font-weight:700;color:#067D62;">Proof-of-Work</div>
+                    <div class="stat-sub">SHA-256 hashing</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert-banner alert-info">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            All property records are immutably stored on the blockchain. Once registered, a record cannot be altered or deleted.
+        </div>
+
+        <!-- Recent Records Preview -->
+        <div class="section-header">
+            <div>
+                <span class="section-title">Recent Registrations</span>
+                <span class="section-count" id="recentCount"></span>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="showView('lands')">
+                View All Records →
+            </button>
+        </div>
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Record ID</th>
+                        <th>Owner</th>
+                        <th>Location</th>
+                        <th>Area</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody id="recentTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─────────── LAND RECORDS ─────────── -->
+    <div id="lands" class="view">
+        <div class="page-header">
+            <div>
+                <div class="page-title">Land Records</div>
+                <div class="page-subtitle">All registered properties on the blockchain</div>
+            </div>
+            <button class="btn btn-primary" onclick="showView('register')">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                Register New
+            </button>
+        </div>
+
+        <div class="toolbar">
+            <input class="search-input" type="text" placeholder="Search by owner or location…" oninput="filterLands(this.value)">
+            <button class="btn btn-secondary btn-sm" onclick="loadLands()">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                Refresh
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-title">All Registered Parcels</div>
+                <span id="landsTotal" class="badge badge-verified">0 records</span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Record ID</th>
+                        <th>Owner Name</th>
+                        <th>Location</th>
+                        <th>Area</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody id="landTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─────────── REGISTER ─────────── -->
+    <div id="register" class="view">
+        <div class="page-header">
+            <div>
+                <div class="page-title">Register New Land</div>
+                <div class="page-subtitle">Submit a new property record to the blockchain</div>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start;">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-title">Property Details</div>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Survey Number <span class="req">*</span></label>
+                            <input class="form-input" id="surveyNumber" type="text" placeholder="e.g. MH-MUM-ANH-001">
+                            <div class="form-hint">Official survey or plot reference number</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Owner ID <span class="req">*</span></label>
+                            <input class="form-input" id="ownerId" type="text" placeholder="e.g. OWNER-001">
+                            <div class="form-hint">Unique owner reference used by the registry</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Owner Name <span class="req">*</span></label>
+                            <input class="form-input" id="ownerName" type="text" placeholder="e.g. Rajesh Kumar">
+                            <div class="form-hint">Full legal name of the property owner</div>
+                        </div>
+                        <div class="form-group">
+                            <label>District <span class="req">*</span></label>
+                            <input class="form-input" id="district" type="text" placeholder="e.g. Mumbai">
+                            <div class="form-hint">District where the parcel is located</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Village / Locality <span class="req">*</span></label>
+                            <input class="form-input" id="village" type="text" placeholder="e.g. Andheri">
+                            <div class="form-hint">Village, ward, or locality name</div>
+                        </div>
+                        <div class="form-group">
+                            <label>State <span class="req">*</span></label>
+                            <input class="form-input" id="state" type="text" placeholder="e.g. Maharashtra">
+                            <div class="form-hint">State or union territory</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Area (sq ft) <span class="req">*</span></label>
+                            <input class="form-input" id="areaSqFt" type="number" min="0.01" step="0.01" placeholder="e.g. 1200">
+                            <div class="form-hint">Numeric area in square feet</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Market Value <span class="req">*</span></label>
+                            <input class="form-input" id="marketValue" type="number" min="0.01" step="0.01" placeholder="e.g. 5000000">
+                            <div class="form-hint">Current assessed market value</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Land Type <span class="req">*</span></label>
+                            <select class="form-input" id="landType">
+                                <option value="RESIDENTIAL">Residential</option>
+                                <option value="COMMERCIAL">Commercial</option>
+                                <option value="AGRICULTURAL">Agricultural</option>
+                                <option value="INDUSTRIAL">Industrial</option>
+                            </select>
+                            <div class="form-hint">Classification used by the land office</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Initiated By</label>
+                            <input class="form-input" id="initiatedBy" type="text" value="public-portal" placeholder="e.g. registrar">
+                            <div class="form-hint">Recorded as the transaction initiator</div>
+                        </div>
+                        <div class="form-group full">
+                            <label>Description</label>
+                            <input class="form-input" id="description" type="text" placeholder="e.g. Ground floor flat, north-facing">
+                            <div class="form-hint">Optional notes describing the parcel</div>
+                        </div>
+                        <div class="form-group full">
+                            <label>Notes</label>
+                            <input class="form-input" id="notes" type="text" placeholder="e.g. First registration">
+                            <div class="form-hint">Optional transaction notes stored on-chain</div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary btn-lg" onclick="registerLand()">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+                            Submit & Mine Block
+                        </button>
+                        <button class="btn btn-secondary btn-lg" onclick="clearForm()">Clear</button>
+                    </div>
+
+                    <div class="mining-bar" id="miningBar">
+                        <div class="mining-spinner"></div>
+                        <div>
+                            <div class="mining-text">⛏ Mining new block…</div>
+                            <div class="mining-sub">Computing proof-of-work hash. This may take a moment.</div>
+                        </div>
+                    </div>
+
+                    <div class="success-bar" id="successBar">
+                        <div class="success-icon">✅</div>
+                        <div>
+                            <div class="success-text">Block mined & record committed!</div>
+                            <div class="success-sub">Your land record has been permanently added to the blockchain.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INFO SIDEBAR -->
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                <div class="card">
+                    <div class="card-header"><div class="card-header-title">How It Works</div></div>
+                    <div class="card-body" style="font-size:13px;color:var(--text-muted);line-height:1.7;">
+                        <p style="margin-bottom:10px;">
+                            1. <strong style="color:var(--text);">Fill the form</strong> with accurate property details.
+                        </p>
+                        <p style="margin-bottom:10px;">
+                            2. <strong style="color:var(--text);">Block is mined</strong> using SHA-256 Proof-of-Work, creating a unique tamper-proof hash.
+                        </p>
+                        <p>
+                            3. <strong style="color:var(--text);">Record is sealed</strong> permanently into the immutable blockchain ledger.
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><div class="card-header-title">Security Notice</div></div>
+                    <div class="card-body" style="font-size:12px;color:var(--text-muted);line-height:1.6;">
+                        Once recorded on the blockchain, land records cannot be altered or deleted. Ensure all details are verified before submission.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─────────── BLOCKCHAIN EXPLORER ─────────── -->
+    <div id="blockchain" class="view">
+        <div class="page-header">
+            <div>
+                <div class="page-title">Blockchain Explorer</div>
+                <div class="page-subtitle">Browse all blocks and inspect transaction data</div>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-secondary" onclick="loadBlockchain()">
+                    <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                    Refresh Chain
+                </button>
+                <button class="btn btn-primary" onclick="validateChain()">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                    Validate Chain
+                </button>
+            </div>
+        </div>
+
+        <div id="validateResult" style="display:none;margin-bottom:16px;"></div>
+
+        <div class="blockchain-list" id="blocks"></div>
+    </div>
+
+</div><!-- /main -->
+
+<script>
+    const API = (() => {
+      const { protocol, hostname, port } = window.location;
+      if (port && port !== '63342') {
+        return `${protocol}//${hostname}:${port}/api`;
+      }
+      return 'http://localhost:8080/api';
+    })();
+    const AUTH_STORAGE_KEY = 'landchain-auth';
+    const AUTH_WARNING_WINDOW_MS = 5 * 60 * 1000;
+
+    let allLands = [];
+    let authState = loadStoredAuth();
+    let authMonitorId = null;
+
+    function loadStoredAuth() {
+      try {
+        const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed.expiresAt && parsed.expiresAt <= Date.now()) {
+          localStorage.removeItem(AUTH_STORAGE_KEY);
+          return null;
+        }
+        return parsed;
+      } catch (e) {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+        return null;
+      }
+    }
+
+    function saveAuth(data) {
+      authState = data;
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
+      applyAuthState();
+    }
+
+    function clearAuth(options = {}) {
+      const { preserveMessage = false } = options;
+      authState = null;
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      applyAuthState({ preserveMessage });
+    }
+
+    function isAuthenticated() {
+      return !!authState?.token;
+    }
+
+    function hasRole(...roles) {
+      return !!authState?.roles?.some(role => roles.includes(role));
+    }
+
+    function setAuthMessage(message, type = '') {
+      const el = document.getElementById('authMessage');
+      el.textContent = message;
+      el.className = `auth-message${type ? ` ${type}` : ''}`;
+    }
+
+    function formatExpiry(timestamp) {
+      if (!timestamp) return '-';
+      return new Date(timestamp).toLocaleString();
+    }
+
+    function msUntilExpiry() {
+      if (!authState?.expiresAt) return 0;
+      return authState.expiresAt - Date.now();
+    }
+
+    function formatRemaining(ms) {
+      if (ms <= 0) return 'Expired';
+
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      if (hours > 0) return `${hours}h ${minutes}m`;
+      if (minutes > 0) return `${minutes}m ${seconds}s`;
+      return `${seconds}s`;
+    }
+
+    function stopAuthMonitor() {
+      if (authMonitorId) {
+        clearInterval(authMonitorId);
+        authMonitorId = null;
+      }
+    }
+
+    function syncAuthIndicators() {
+      const authPill = document.querySelector('.auth-status-pill');
+      const authDot = document.getElementById('authStatusDot');
+      const authLabel = document.getElementById('authNavLabel');
+      const sessionState = document.getElementById('authSessionState');
+      const timeRemaining = document.getElementById('authTimeRemaining');
+
+      if (!isAuthenticated()) {
+        authPill.classList.remove('authenticated', 'warning');
+        authDot.classList.remove('valid', 'warning', 'invalid');
+        authLabel.textContent = 'Public Access';
+        sessionState.textContent = 'Inactive';
+        sessionState.className = '';
+        timeRemaining.textContent = '-';
+        timeRemaining.className = '';
+        return;
+      }
+
+      const remainingMs = msUntilExpiry();
+      const expiringSoon = remainingMs <= AUTH_WARNING_WINDOW_MS;
+
+      authPill.classList.toggle('authenticated', !expiringSoon);
+      authPill.classList.toggle('warning', expiringSoon);
+      authDot.classList.remove('valid', 'warning', 'invalid');
+      authDot.classList.add(expiringSoon ? 'warning' : 'valid');
+      authLabel.textContent = expiringSoon
+        ? `${authState.username} | ${formatRemaining(remainingMs)}`
+        : authState.username;
+
+      sessionState.textContent = expiringSoon ? 'Expiring soon' : 'Active';
+      sessionState.className = expiringSoon ? 'warning' : '';
+      timeRemaining.textContent = formatRemaining(remainingMs);
+      timeRemaining.className = expiringSoon ? 'warning' : '';
+    }
+
+    function startAuthMonitor() {
+      stopAuthMonitor();
+
+      if (!isAuthenticated()) {
+        syncAuthIndicators();
+        return;
+      }
+
+      syncAuthIndicators();
+      authMonitorId = setInterval(() => {
+        if (!isAuthenticated()) {
+          stopAuthMonitor();
+          return;
+        }
+
+        if (msUntilExpiry() <= 0) {
+          handleExpiredSession();
+          return;
+        }
+
+        syncAuthIndicators();
+      }, 1000);
+    }
+
+    function applyAuthState(options = {}) {
+      const { preserveMessage = false } = options;
+      const loginForm = document.getElementById('authLoginForm');
+      const session = document.getElementById('authSession');
+      const registerNav = document.querySelectorAll('.nav-link')[2];
+      const blockchainNav = document.querySelectorAll('.nav-link')[3];
+      const dashboardCta = document.querySelector('#dashboard .btn.btn-primary.btn-lg');
+
+      if (isAuthenticated()) {
+        loginForm.style.display = 'none';
+        session.style.display = 'flex';
+        document.getElementById('authFullName').textContent = authState.fullName || authState.username;
+        document.getElementById('authUsernameValue').textContent = authState.username || '-';
+        document.getElementById('authExpiresAt').textContent = formatExpiry(authState.expiresAt);
+        document.getElementById('authRoles').innerHTML = (authState.roles || []).map(role =>
+          `<span class="role-pill">${role.replace('ROLE_', '')}</span>`
+        ).join('');
+        syncAuthIndicators();
+        if (!preserveMessage) {
+          setAuthMessage('Signed in. Protected requests now include your JWT.', 'success');
+        }
+      } else {
+        loginForm.style.display = 'grid';
+        session.style.display = 'none';
+        document.getElementById('authRoles').innerHTML = '';
+        document.getElementById('authFullName').textContent = 'Not signed in';
+        document.getElementById('authUsernameValue').textContent = '-';
+        document.getElementById('authExpiresAt').textContent = '-';
+        syncAuthIndicators();
+        if (!preserveMessage) {
+          setAuthMessage('Sign in to use secured actions in production.');
+        }
+      }
+
+      const canRegister = hasRole('ROLE_REGISTRAR', 'ROLE_ADMIN');
+      const canInspectChain = hasRole('ROLE_ADMIN');
+
+      registerNav.classList.toggle('disabled', !canRegister);
+      blockchainNav.classList.toggle('disabled', !canInspectChain);
+      dashboardCta.classList.toggle('disabled', !canRegister);
+      document.getElementById('initiatedBy').value = authState?.username || 'public-portal';
+      startAuthMonitor();
+    }
+
+    async function apiFetch(path, options = {}) {
+      if (authState?.expiresAt && authState.expiresAt <= Date.now()) {
+        handleExpiredSession();
+        throw new Error('Session expired. Sign in again to continue.');
+      }
+
+      const headers = { ...(options.headers || {}) };
+      if (authState?.token) {
+        headers.Authorization = `Bearer ${authState.token}`;
+      }
+
+      const res = await fetch(API + path, { ...options, headers });
+      const text = await res.text();
+      let json = null;
+
+      if (text) {
+        try {
+          json = JSON.parse(text);
+        } catch (e) {
+          json = null;
+        }
+      }
+
+      if (res.status === 401) {
+        if (isAuthenticated()) {
+          handleExpiredSession((json && json.message) || 'Session expired. Sign in again to continue.');
+        }
+        throw new Error((json && json.message) || 'Authentication required.');
+      }
+
+      if (res.status === 403) {
+        throw new Error((json && json.message) || 'You do not have permission for this action.');
+      }
+
+      if (!res.ok) {
+        const detail = json && typeof json.data === 'object' && json.data !== null
+          ? Object.values(json.data).join(', ')
+          : (json && json.message);
+        throw new Error(detail || `Request failed with status ${res.status}.`);
+      }
+
+      return json;
+    }
+
+    async function login(event) {
+      event.preventDefault();
+
+      const username = readValue('loginUsername');
+      const password = readValue('loginPassword');
+
+      if (!username || !password) {
+        setAuthMessage('Enter both username and password.', 'error');
+        return;
+      }
+
+      setAuthMessage('Signing in...');
+
+      try {
+        const json = await apiFetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username,
+            password
+          })
+        });
+
+        saveAuth(json.data);
+        document.getElementById('loginPassword').value = '';
+        refreshProtectedData();
+      } catch (e) {
+        setAuthMessage(e.message || 'Unable to sign in.', 'error');
+      }
+    }
+
+    function handleExpiredSession(message = 'Session expired. Sign in again to continue.') {
+      if (!isAuthenticated()) {
+        return;
+      }
+
+      logout(message, 'warning');
+    }
+
+    function logout(message = 'Signed out successfully.', type = 'success') {
+      const activeView = document.querySelector('.view.active')?.id;
+      clearAuth({ preserveMessage: true });
+
+      if (activeView === 'register' || activeView === 'blockchain') {
+        showView('dashboard');
+      }
+
+      document.getElementById('blocks').innerHTML = '<div class="empty-state"><h3>Private access required</h3><p>Private access is required to inspect the full blockchain.</p></div>';
+      loadLands();
+      loadBlockchainSummary();
+      setAuthMessage(message, type);
+    }
+
+    function refreshProtectedData() {
+      loadLands();
+      loadBlockchain();
+      validateChain();
+    }
+
+    function locationLabel(land) {
+      return [land.village, land.district, land.state].filter(Boolean).join(', ');
+    }
+
+    function areaLabel(land) {
+      if (land.areaSqFt == null) return '-';
+      return `${Number(land.areaSqFt).toLocaleString()} sq ft`;
+    }
+
+    function statusLabel(land) {
+      return (land.status || 'UNKNOWN').replaceAll('_', ' ');
+    }
+
+    function readValue(id) {
+      return document.getElementById(id).value.trim();
+    }
+
+    function updateChainStatus(valid, blockCount = null) {
+      if (blockCount != null) {
+        document.getElementById('blockCount').textContent = blockCount;
+      }
+
+      document.getElementById('navStatusText').textContent = valid ? 'Chain Valid' : 'Invalid';
+      document.getElementById('chainValid').textContent = valid ? 'Verified' : 'Invalid';
+      document.getElementById('navStatusDot').classList.toggle('valid', !!valid);
+      document.getElementById('navStatusDot').classList.toggle('invalid', !valid);
+    }
+
+    /* ── VIEW SWITCH ── */
+    function showView(v) {
+      if (v === 'register' && !hasRole('ROLE_REGISTRAR', 'ROLE_ADMIN')) {
+        setAuthMessage('Sign in as a registrar or admin to register land.', 'error');
+        return;
+      }
+
+      if (v === 'blockchain' && !hasRole('ROLE_ADMIN')) {
+        setAuthMessage('Private access is required to inspect full blockchain data.', 'error');
+        return;
+      }
+
+      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+      document.getElementById(v).classList.add('active');
+
+      document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+      const map = { dashboard: 0, lands: 1, register: 2, blockchain: 3 };
+      document.querySelectorAll('.nav-link')[map[v]].classList.add('active');
+
+      const crumbMap = {
+        dashboard: 'Dashboard',
+        lands: 'Land Records',
+        register: 'Register Land',
+        blockchain: 'Blockchain Explorer'
+      };
+      document.getElementById('breadcrumbCurrent').textContent = crumbMap[v];
+
+      if (v === 'lands') loadLands();
+      if (v === 'dashboard') { loadLands(); loadBlockchainSummary(); }
+      if (v === 'blockchain') loadBlockchain();
+    }
+
+    /* ── LOAD LANDS ── */
+    async function loadLands() {
+      try {
+        const json = await apiFetch('/land');
+        allLands = json.data || [];
+        renderLands(allLands);
+
+        document.getElementById('totalLands').textContent = allLands.length;
+        document.getElementById('recentCount').textContent = `(${allLands.length} total)`;
+
+      } catch (e) {
+        renderLandsError(e.message || 'Unable to load records.');
+      }
+    }
+
+    function renderLands(lands) {
+      const rows = lands.length ? lands.map((l) => `
+        <tr>
+          <td><span class="td-id">${l.parcelId || '-'}</span></td>
+          <td class="td-owner">${l.currentOwnerName || '-'}</td>
+          <td>${locationLabel(l) || '-'}</td>
+          <td><span class="badge badge-area">${areaLabel(l)}</span></td>
+          <td><span class="badge badge-verified">${statusLabel(l)}</span></td>
+        </tr>
+      `).join('') : `<tr><td colspan="5" style="text-align:center;padding:32px;">No records found</td></tr>`;
+
+      document.getElementById('landTable').innerHTML = rows;
+
+      document.getElementById('recentTable').innerHTML = lands.length ? lands.slice(-5).reverse().map(l => `
+        <tr>
+          <td><span class="td-id">${l.parcelId || '-'}</span></td>
+          <td class="td-owner">${l.currentOwnerName || '-'}</td>
+          <td>${locationLabel(l) || '-'}</td>
+          <td><span class="badge badge-area">${areaLabel(l)}</span></td>
+          <td><span class="badge badge-verified">${statusLabel(l)}</span></td>
+        </tr>
+      `).join('') : `<tr><td colspan="5" style="text-align:center;padding:32px;">No records found</td></tr>`;
+
+      document.getElementById('landsTotal').textContent = `${lands.length} records`;
+    }
+
+    function renderLandsError(message) {
+      const msg = `<tr><td colspan="5" style="text-align:center;padding:32px;color:red;">⚠ API not reachable</td></tr>`;
+      document.getElementById('landTable').innerHTML = msg;
+      document.getElementById('recentTable').innerHTML = msg;
+      document.getElementById('totalLands').textContent = '—';
+      document.getElementById('recentCount').textContent = '';
+    }
+
+    /* ── FILTER ── */
+    function filterLands(q) {
+      const query = q.toLowerCase();
+      const filtered = allLands.filter(l =>
+        (l.currentOwnerName || '').toLowerCase().includes(query) ||
+        (l.surveyNumber || '').toLowerCase().includes(query) ||
+        locationLabel(l).toLowerCase().includes(query)
+      );
+      renderLands(filtered);
+    }
+
+    /* ── REGISTER LAND ── */
+    async function registerLand() {
+      const payload = {
+        parcelId: 'PENDING',
+        surveyNumber: readValue('surveyNumber'),
+        transactionType: 'REGISTRATION',
+        toOwnerId: readValue('ownerId'),
+        toOwnerName: readValue('ownerName'),
+        district: readValue('district'),
+        village: readValue('village'),
+        state: readValue('state'),
+        areaSqFt: Number(readValue('areaSqFt')),
+        marketValue: Number(readValue('marketValue')),
+        landType: document.getElementById('landType').value,
+        description: readValue('description') || null,
+        notes: readValue('notes') || null,
+        initiatedBy: readValue('initiatedBy') || 'public-portal'
+      };
+
+      const missing = [
+        payload.surveyNumber,
+        payload.toOwnerId,
+        payload.toOwnerName,
+        payload.district,
+        payload.village,
+        payload.state,
+        document.getElementById('areaSqFt').value.trim(),
+        document.getElementById('marketValue').value.trim()
+      ].some(v => !v);
+
+      if (missing || Number.isNaN(payload.areaSqFt) || Number.isNaN(payload.marketValue)) {
+        alert('Fill all required fields with valid numbers.');
+        return;
+      }
+
+      document.getElementById('successBar').classList.remove('visible');
+      document.getElementById('miningBar').classList.add('visible');
+
+      try {
+        const res = await fetch(API + '/land/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+
+        if (!res.ok || !json.success) {
+          const detail = typeof json.data === 'object' && json.data !== null
+            ? Object.values(json.data).join(', ')
+            : json.message;
+          throw new Error(detail || 'Unable to register land.');
+        }
+
+        setTimeout(() => {
+          document.getElementById('miningBar').classList.remove('visible');
+          document.getElementById('successBar').classList.add('visible');
+
+          clearForm();
+          loadLands();
+          loadBlockchain();
+          validateChain();
+        }, 1200);
+
+      } catch (e) {
+        document.getElementById('miningBar').classList.remove('visible');
+        alert(e.message || 'API Error');
+      }
+    }
+
+    function clearForm() {
+      [
+        'surveyNumber',
+        'ownerId',
+        'ownerName',
+        'district',
+        'village',
+        'state',
+        'areaSqFt',
+        'marketValue',
+        'description',
+        'notes'
+      ].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('landType').value = 'RESIDENTIAL';
+      document.getElementById('initiatedBy').value = 'public-portal';
+    }
+
+    /* ── LOAD BLOCKCHAIN ── */
+    async function loadBlockchain() {
+      try {
+        const res = await fetch(API + '/land/blockchain/all'); // ✅ FIXED
+        const json = await res.json();
+        const blocks = json.data || [];
+
+        document.getElementById('blockCount').textContent = blocks.length;
+
+        document.getElementById('blocks').innerHTML = blocks.map(b => `
+          <div style="border:1px solid #ccc;padding:10px;margin-bottom:10px">
+            <b>Block #${b.index}</b><br>
+            Hash: ${b.hash}<br>
+            Prev: ${b.previousHash}<br>
+          </div>
+        `).join('');
+
+      } catch (e) {
+        document.getElementById('blocks').innerHTML = "❌ Cannot load blockchain";
+      }
+    }
+
+    /* ── VALIDATE ── */
+    async function validateChain() {
+      try {
+        const res = await fetch(API + '/land/blockchain/validate');
+        const json = await res.json();
+        const valid = json.data;
+
+        document.getElementById('navStatusText').textContent = valid ? 'Chain Valid' : 'Invalid';
+        document.getElementById('chainValid').textContent = valid ? 'Verified' : 'Invalid';
+        document.getElementById('navStatusDot').classList.toggle('valid', !!valid);
+        document.getElementById('navStatusDot').classList.toggle('invalid', !valid);
+
+      } catch (e) {
+        document.getElementById('navStatusText').textContent = 'API Offline';
+        document.getElementById('chainValid').textContent = 'Offline';
+        document.getElementById('navStatusDot').classList.remove('valid');
+        document.getElementById('navStatusDot').classList.add('invalid');
+      }
+    }
+
+    /* ── INIT ── */
+    function renderLandsError(message) {
+      const detail = message || 'Unable to load records.';
+      const msg = `<tr><td colspan="5" style="text-align:center;padding:32px;color:red;">${detail}</td></tr>`;
+      document.getElementById('landTable').innerHTML = msg;
+      document.getElementById('recentTable').innerHTML = msg;
+      document.getElementById('totalLands').textContent = '-';
+      document.getElementById('recentCount').textContent = '';
+      document.getElementById('landsTotal').textContent = 'Unavailable';
+    }
+
+    async function registerLand() {
+      if (!hasRole('ROLE_REGISTRAR', 'ROLE_ADMIN')) {
+        setAuthMessage('Sign in as a registrar or admin to register land.', 'error');
+        return;
+      }
+
+      const payload = {
+        parcelId: 'PENDING',
+        surveyNumber: readValue('surveyNumber'),
+        transactionType: 'REGISTRATION',
+        toOwnerId: readValue('ownerId'),
+        toOwnerName: readValue('ownerName'),
+        district: readValue('district'),
+        village: readValue('village'),
+        state: readValue('state'),
+        areaSqFt: Number(readValue('areaSqFt')),
+        marketValue: Number(readValue('marketValue')),
+        landType: document.getElementById('landType').value,
+        description: readValue('description') || null,
+        notes: readValue('notes') || null,
+        initiatedBy: authState?.username || readValue('initiatedBy') || 'public-portal'
+      };
+
+      const missing = [
+        payload.surveyNumber,
+        payload.toOwnerId,
+        payload.toOwnerName,
+        payload.district,
+        payload.village,
+        payload.state,
+        document.getElementById('areaSqFt').value.trim(),
+        document.getElementById('marketValue').value.trim()
+      ].some(v => !v);
+
+      if (missing || Number.isNaN(payload.areaSqFt) || Number.isNaN(payload.marketValue)) {
+        alert('Fill all required fields with valid numbers.');
+        return;
+      }
+
+      document.getElementById('successBar').classList.remove('visible');
+      document.getElementById('miningBar').classList.add('visible');
+
+      try {
+        const json = await apiFetch('/land/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        setTimeout(() => {
+          document.getElementById('miningBar').classList.remove('visible');
+          document.getElementById('successBar').classList.add('visible');
+          clearForm();
+          refreshProtectedData();
+          setAuthMessage(json.message || 'Land parcel registered successfully.', 'success');
+        }, 1200);
+      } catch (e) {
+        document.getElementById('miningBar').classList.remove('visible');
+        setAuthMessage(e.message || 'Unable to register land.', 'error');
+        alert(e.message || 'API Error');
+      }
+    }
+
+    function clearForm() {
+      [
+        'surveyNumber',
+        'ownerId',
+        'ownerName',
+        'district',
+        'village',
+        'state',
+        'areaSqFt',
+        'marketValue',
+        'description',
+        'notes'
+      ].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('landType').value = 'RESIDENTIAL';
+      document.getElementById('initiatedBy').value = authState?.username || 'public-portal';
+    }
+
+    async function loadBlockchainSummary() {
+      try {
+        const json = await apiFetch('/land/blockchain/info');
+        const info = json.data || {};
+        updateChainStatus(!!info.chainValid, info.chainLength ?? 0);
+      } catch (e) {
+        document.getElementById('blockCount').textContent = '-';
+        document.getElementById('navStatusText').textContent = 'API Offline';
+        document.getElementById('chainValid').textContent = 'Offline';
+        document.getElementById('navStatusDot').classList.remove('valid');
+        document.getElementById('navStatusDot').classList.add('invalid');
+      }
+    }
+
+    async function loadBlockchain() {
+      if (!hasRole('ROLE_ADMIN')) {
+        document.getElementById('blocks').innerHTML = '<div class="empty-state"><h3>Private access required</h3><p>Private access is required to inspect the full blockchain.</p></div>';
+        await loadBlockchainSummary();
+        return;
+      }
+
+      try {
+        const json = await apiFetch('/land/blockchain/all');
+        const blocks = json.data || [];
+
+        updateChainStatus(true, blocks.length);
+
+        document.getElementById('blocks').innerHTML = blocks.map(b => `
+          <div style="border:1px solid #ccc;padding:10px;margin-bottom:10px">
+            <b>Block #${b.index}</b><br>
+            Hash: ${b.hash}<br>
+            Prev: ${b.previousHash}<br>
+          </div>
+        `).join('');
+      } catch (e) {
+        document.getElementById('blocks').innerHTML = `<div class="empty-state"><h3>Blockchain unavailable</h3><p>${e.message || 'Unable to load blockchain data.'}</p></div>`;
+      }
+    }
+
+    async function validateChain() {
+      if (!hasRole('ROLE_ADMIN')) {
+        await loadBlockchainSummary();
+        return;
+      }
+
+      try {
+        const json = await apiFetch('/land/blockchain/validate');
+        updateChainStatus(!!json.data);
+      } catch (e) {
+        document.getElementById('navStatusText').textContent = 'API Offline';
+        document.getElementById('chainValid').textContent = 'Offline';
+        document.getElementById('navStatusDot').classList.remove('valid');
+        document.getElementById('navStatusDot').classList.add('invalid');
+      }
+    }
+
+    applyAuthState();
+    clearForm();
+    loadLands();
+    loadBlockchainSummary();
+</script>
+</body>
+</html>

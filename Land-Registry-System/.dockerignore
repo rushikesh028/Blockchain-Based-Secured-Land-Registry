@@ -1,0 +1,7 @@
+target/
+tools/
+.idea/
+.vscode/
+run-*.log
+*.log
+.env
