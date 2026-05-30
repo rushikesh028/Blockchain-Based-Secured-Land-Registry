@@ -95,7 +95,7 @@ mvn test
 
 ## Production Configuration
 
-Production settings are defined in [src/main/resources/application-prod.properties](src/main/resources/application-prod.properties).
+Production settings are defined in [src/main/resources/application-prod.properties](Land-Registry-System/src/main/resources/application-prod.properties).
 
 Important environment variables:
 
@@ -151,7 +151,7 @@ To deploy on Render:
 
 The frontend is served from:
 
-- [src/main/resources/static/index.html](src/main/resources/static/index.html)
+- [src/main/resources/static/index.html](Land-Registry-System/src/main/resources/static/index.html)
 
 It is a single static dashboard page that interacts with the backend REST API.
 
