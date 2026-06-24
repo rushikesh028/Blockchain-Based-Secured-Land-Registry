@@ -1,162 +1,239 @@
-# Land Registry System
+# Blockchain-Based Secure Land Registry System
 
-Spring Boot application for managing land records with a custom blockchain-style transaction log, a static dashboard frontend, and relational persistence for query access.
+A secure and scalable land record management platform developed using Spring Boot and a custom blockchain-inspired transaction ledger. The system enables transparent property registration, ownership transfers, dispute management, and land record verification while maintaining data integrity through immutable transaction tracking.
 
-## Stack
+## Overview
 
-- Java 17
-- Spring Boot 3
-- Spring Data JPA
-- Spring Security
-- H2 for local development
-- MySQL for production deployment
-- Static HTML/CSS/JavaScript frontend bundled in the backend
-- Docker, Docker Compose, Nginx, and Render deployment files
+The Blockchain-Based Secure Land Registry System is designed to modernize traditional land record management by providing a secure digital platform for property registration and ownership management. The application combines the reliability of relational databases with a blockchain-style transaction log to ensure transparency, traceability, and tamper resistance of land records.
 
-## Main Features
+The platform supports role-based access control, secure authentication, transaction history tracking, and blockchain integrity validation, making it suitable for educational, research, and prototype government digitization initiatives.
 
-- Register new land parcels
-- Transfer ownership
-- Mutate land records
-- Record encumbrances
-- File disputes
-- View parcel lists, history, and blockchain state
-- Validate blockchain integrity
+---
+
+## Technology Stack
+
+### Backend
+
+* Java 17
+* Spring Boot 3
+* Spring Security
+* Spring Data JPA
+* Hibernate ORM
+* RESTful APIs
+
+### Database
+
+* H2 Database (Development Environment)
+* MySQL (Production Environment)
+
+### Frontend
+
+* HTML5
+* CSS3
+* JavaScript
+
+### DevOps & Deployment
+
+* Docker
+* Docker Compose
+* Nginx
+* Render Cloud Platform
+* Maven
+
+---
+
+## Key Features
+
+### Property Management
+
+* Register new land parcels
+* Update land information and ownership records
+* Manage property metadata and ownership details
+
+### Ownership Transfer
+
+* Secure ownership transfer workflow
+* Complete transaction history tracking
+* Ownership verification and audit trail
+
+### Encumbrance Management
+
+* Record liens, mortgages, and legal restrictions
+* Maintain historical encumbrance records
+* Track active and resolved encumbrances
+
+### Dispute Handling
+
+* File property disputes
+* Monitor dispute status and resolution history
+* Maintain dispute-related documentation records
+
+### Blockchain-Based Audit Trail
+
+* Immutable transaction logging
+* Block generation for critical property transactions
+* Blockchain integrity verification
+* Historical transaction validation
+
+### Security & Access Control
+
+* JWT-based authentication
+* Role-Based Access Control (RBAC)
+* Secure API endpoints
+* Protected administrative operations
+
+### Dashboard & Reporting
+
+* Interactive web dashboard
+* Parcel search and record lookup
+* Ownership history visualization
+* Blockchain status monitoring
+
+---
+
+## System Architecture
+
+```
+Client (Web Dashboard)
+│
+▼
+REST API Layer (Controllers)
+│
+▼
+Business Logic Layer (Services)
+│
+┌────────┴────────┐
+▼                 ▼
+Blockchain Engine   JPA/Hibernate
+▼                 ▼
+Transaction Log    MySQL / H2 Database
+```
+
+---
 
 ## Project Structure
 
-```text
+```
 src/main/java/com/landregistry
-  blockchain/   Blockchain classes
-  config/       Security and app configuration
-  controller/   REST controllers
-  dto/          Request and response DTOs
-  entity/       JPA entities
-  repository/   Database repositories
-  service/      Business logic
-  util/         Helpers
+│
+├── blockchain/      Blockchain implementation and validation
+├── config/          Security and application configuration
+├── controller/      REST API endpoints
+├── dto/             Request and response models
+├── entity/          JPA entity classes
+├── repository/      Data access layer
+├── service/         Business logic layer
+└── util/            Utility classes
 
 src/main/resources
-  application.properties
-  application-prod.properties
-  static/index.html
+│
+├── application.properties
+├── application-prod.properties
+└── static/
+└── index.html
 
 deploy/
-  nginx/
-  render/
+├── nginx/
+└── render/
 ```
 
-## Local Development
+---
 
-### Prerequisites
+## Core Functionalities
 
-- Java 17
-- Maven 3.9+
+### Land Parcel Registration
 
-### Run Locally
+Creates and stores new property records while generating corresponding blockchain transaction entries.
+
+### Ownership Transfer
+
+Transfers property ownership between registered users and records each transfer in the blockchain ledger.
+
+### Record Modification
+
+Allows authorized personnel to update land information while preserving historical transaction records.
+
+### Blockchain Validation
+
+Verifies the integrity of the blockchain by checking block hashes, previous hash references, and transaction consistency.
+
+### Historical Audit Trail
+
+Provides complete visibility into all transactions associated with a specific property.
+
+---
+
+## Development & Deployment
+
+### Local Development
+
+* Java 17
+* Maven 3.9+
+* H2 In-Memory Database
+
+Run the application:
 
 ```bash
 mvn spring-boot:run
 ```
 
-The app starts on:
+Application URL:
 
-- `http://localhost:8080`
-
-Local development uses:
-
-- in-memory H2 database
-- demo data seeding
-- default seeded users
-
-## Default Local Users
-
-These are seeded only when local demo seeding is enabled.
-
-| Username | Password | Role |
-|---|---|---|
-| `admin` | `Admin@1234` | `ROLE_ADMIN` |
-| `registrar` | `Registrar@1234` | `ROLE_REGISTRAR` |
-| `officer` | `Officer@1234` | `ROLE_OFFICER` |
-
-## Build
-
-```bash
-mvn clean package
+```
+http://localhost:8080
 ```
 
-The packaged JAR is created under `target/`.
+### Production Deployment
 
-## Test
+The application supports deployment using:
 
-```bash
-mvn test
-```
+* Docker Containers
+* Docker Compose
+* Nginx Reverse Proxy
+* Render Cloud Platform
 
-## Production Configuration
+Environment-specific configurations are managed through externalized environment variables and Spring Profiles.
 
-Production settings are defined in [src/main/resources/application-prod.properties](Land-Registry-System/src/main/resources/application-prod.properties).
+---
 
-Important environment variables:
+## Security Features
 
-- `PORT` or `SERVER_PORT`
-- `SPRING_PROFILES_ACTIVE=prod`
-- `SPRING_DATASOURCE_URL`
-- `SPRING_DATASOURCE_USERNAME`
-- `SPRING_DATASOURCE_PASSWORD`
-- `APP_JWT_SECRET`
-- `APP_CORS_ALLOWED_ORIGINS`
+* JWT Authentication
+* Password Encryption using BCrypt
+* Role-Based Authorization
+* Secure REST API Access
+* Environment-Based Secret Management
+* CORS Configuration Support
 
-Optional bootstrap admin values:
+---
 
-- `APP_BOOTSTRAP_ADMIN_USERNAME`
-- `APP_BOOTSTRAP_ADMIN_PASSWORD`
-- `APP_BOOTSTRAP_ADMIN_FULL_NAME`
-- `APP_BOOTSTRAP_ADMIN_EMAIL`
+## Learning Outcomes
 
-## Docker Deployment
+This project demonstrates practical implementation of:
 
-Build and run with Docker Compose:
+* Spring Boot Application Development
+* REST API Design
+* Spring Security & JWT Authentication
+* Database Design with JPA/Hibernate
+* Blockchain Fundamentals
+* Docker Containerization
+* Cloud Deployment Strategies
+* Secure Enterprise Application Architecture
 
-```bash
-docker compose --env-file .env up -d --build
-```
+---
 
-Related files:
+## Future Enhancements
 
-- [Dockerfile](Dockerfile)
-- [docker-compose.yml](docker-compose.yml)
-- [.env.example](.env.example)
-- [DEPLOYMENT.md](DEPLOYMENT.md)
+* Smart Contract Integration
+* Digital Signature Verification
+* GIS/Map-Based Property Visualization
+* Multi-Node Distributed Blockchain
+* Government Registry Integration
+* Advanced Analytics Dashboard
+* Document Upload & Verification System
 
-## Render Deployment
+---
 
-This repo includes a Render blueprint:
+## Conclusion
 
-- [render.yaml](render.yaml)
-
-It defines:
-
-- a web service for the Spring Boot app
-- a private MySQL service with persistent disk
-
-To deploy on Render:
-
-1. Push the repo to GitHub, GitLab, or Bitbucket.
-2. In Render, create a new Blueprint from the repo.
-3. Set the secret environment variables requested by `render.yaml`.
-4. Deploy.
-
-## Frontend
-
-The frontend is served from:
-
-- [src/main/resources/static/index.html](Land-Registry-System/src/main/resources/static/index.html)
-
-It is a single static dashboard page that interacts with the backend REST API.
-
-## Notes
-
-- The blockchain implementation in this project is a custom educational/prototype design, not a distributed public blockchain.
-- The database is used for application persistence and query access.
-- Some documentation files in the repo may still describe older auth or deployment behavior; use the current code and config files as the source of truth.
+The Blockchain-Based Secure Land Registry System provides a secure, transparent, and efficient solution for managing land ownership records. By combining modern web technologies with blockchain-inspired transaction tracking, the platform ensures data integrity, accountability, and auditability while delivering a user-friendly property management experience.
